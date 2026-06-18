@@ -1,9 +1,14 @@
 import React from 'react';
 
-export const AircraftWindow: React.FC = () => {
+interface AircraftWindowProps {
+  theme?: 'light' | 'dark';
+}
+
+export const AircraftWindow: React.FC<AircraftWindowProps> = ({ theme = 'dark' }) => {
+  const isDark = theme === 'dark';
+
   return (
     <div className="w-2.5 h-4 mx-1.5 flex items-center justify-center pointer-events-none select-none">
-      {/* Outer Window Frame */}
       <svg
         viewBox="0 0 100 160"
         className="w-full h-full opacity-60 hover:opacity-100 transition-opacity duration-300"
@@ -17,17 +22,17 @@ export const AircraftWindow: React.FC = () => {
           width="90"
           height="150"
           rx="45"
-          className="fill-slate-800 stroke-slate-600"
+          className={isDark ? 'fill-slate-800 stroke-slate-600' : 'fill-slate-200 stroke-slate-300'}
           strokeWidth="10"
         />
-        {/* Inner Glass / Shade */}
+        {/* Inner Glass */}
         <rect
           x="22"
           y="22"
           width="56"
           height="116"
           rx="28"
-          className="fill-slate-950 stroke-slate-900"
+          className={isDark ? 'fill-slate-950 stroke-slate-900' : 'fill-slate-350 stroke-slate-450'}
           strokeWidth="6"
         />
       </svg>

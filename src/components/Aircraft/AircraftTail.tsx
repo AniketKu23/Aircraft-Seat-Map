@@ -2,10 +2,12 @@ import React from 'react';
 
 interface AircraftTailProps {
   bodyType: 'NARROW' | 'WIDE' | 'REGIONAL';
+  theme?: 'light' | 'dark';
 }
 
-export const AircraftTail: React.FC<AircraftTailProps> = ({ bodyType }) => {
-  // Sizing helper based on aircraft body type
+export const AircraftTail: React.FC<AircraftTailProps> = ({ bodyType, theme = 'dark' }) => {
+  const isDark = theme === 'dark';
+
   const getWidthClass = () => {
     switch (bodyType) {
       case 'WIDE':
@@ -30,39 +32,41 @@ export const AircraftTail: React.FC<AircraftTailProps> = ({ bodyType }) => {
         {/* Left Horizontal Stabilizer */}
         <path
           d="M 20 20 L -60 120 L 50 120 L 70 60 Z"
-          className="fill-slate-800 stroke-slate-700"
+          className={isDark ? 'fill-slate-800 stroke-slate-700' : 'fill-slate-200 stroke-slate-300'}
           strokeWidth="3"
         />
 
         {/* Right Horizontal Stabilizer */}
         <path
           d="M 320 20 L 400 120 L 290 120 L 270 60 Z"
-          className="fill-slate-800 stroke-slate-700"
+          className={isDark ? 'fill-slate-800 stroke-slate-700' : 'fill-slate-200 stroke-slate-300'}
           strokeWidth="3"
         />
 
         {/* Fuselage Rear Taper Outline */}
         <path
           d="M 20 0 C 20 0 25 80 150 150 C 158 155 182 155 190 150 C 315 80 320 0 320 0"
-          className="fill-slate-900 stroke-slate-700"
+          className={`transition-all duration-300 ${
+            isDark ? 'fill-slate-900 stroke-slate-700' : 'fill-slate-100 stroke-slate-350'
+          }`}
           strokeWidth="4"
         />
 
-        {/* APU Exhaust cone at very tail tip */}
+        {/* APU Exhaust cone at tail tip */}
         <rect
           x="162"
           y="150"
           width="16"
           height="16"
-          rx="2"
-          className="fill-slate-950 stroke-slate-850"
+          rx="0" /* Minimalist square APU exhaust */
+          className={isDark ? 'fill-slate-950 stroke-slate-800' : 'fill-slate-300 stroke-slate-400'}
           strokeWidth="2"
         />
         
-        {/* Vertical Stabilizer Fin Outline (Shadow overlay in the center) */}
+        {/* Vertical Stabilizer Fin Outline */}
         <path
           d="M 167 40 L 170 145 L 173 145 L 173 40 Z"
-          className="fill-slate-750 stroke-slate-650"
+          className={isDark ? 'fill-slate-750 stroke-slate-650' : 'fill-slate-250 stroke-slate-350'}
           strokeWidth="1.5"
         />
       </svg>

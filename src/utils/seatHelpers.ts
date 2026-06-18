@@ -106,9 +106,19 @@ export function parseSeatData(rawJson: any, segmentRef: string): SeatItem[] {
     rawSeats = rawJson.Service;
     isFormat1 = true;
   } else {
-    // seatdata2.json / req1 / req2 style
-    const acai = rawJson.ACAI || rawJson;
-    rawSeats = acai?.SL?.SV || [];
+    // Check if CheckoutData nested path exists
+    const preBookResponse = rawJson.CheckoutData?.FlightPreBookResponse || rawJson.FlightPreBookResponse;
+    const ai = preBookResponse?.Flight?.AirlineList?.AI?.[0];
+    
+    if (ai?.ACAI?.SL?.SV) {
+      rawSeats = ai.ACAI.SL.SV;
+    } else if (rawJson.ACAI?.SL?.SV) {
+      rawSeats = rawJson.ACAI.SL.SV;
+    } else if (rawJson.SL?.SV) {
+      rawSeats = rawJson.SL.SV;
+    } else {
+      rawSeats = [];
+    }
   }
 
   // Filter for seat items and filter out "NoSeat" placeholders

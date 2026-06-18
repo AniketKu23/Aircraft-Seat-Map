@@ -14,6 +14,7 @@ interface AircraftShellProps {
   selectedSeatsMap: Record<string, Passenger>;
   activePassengerId: string;
   onSelect: (seat: SeatItem) => void;
+  theme?: 'light' | 'dark';
 }
 
 export const AircraftShell: React.FC<AircraftShellProps> = ({
@@ -21,7 +22,8 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
   seats,
   selectedSeatsMap,
   activePassengerId,
-  onSelect
+  onSelect,
+  theme = 'dark'
 }) => {
   const {
     layout,
@@ -30,6 +32,7 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
     maxRow
   } = useAircraftLayout(aircraftCode, seats);
 
+  const isDark = theme === 'dark';
   const bodyType = layout.bodyType;
 
   // Sizing helper based on aircraft body type for the fuselage tube
@@ -50,17 +53,19 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
   const premiumRows = cabinRows.filter(r => r.rowNo > 0 && r.cabinClass?.name === 'PREMIUM ECONOMY');
   const economyRows = cabinRows.filter(r => r.rowNo > 0 && r.cabinClass?.name === 'ECONOMY');
   const rearFacilities = cabinRows.filter(r => r.rowNo > maxRow);
-
-  // Divider rows (negative row numbers) between cabins
   const dividers = cabinRows.filter(r => r.rowNo < 0);
 
   return (
     <div className="relative flex flex-col items-center py-10 w-full select-none overflow-x-visible">
       {/* 1. Aircraft Nose */}
-      <AircraftNose bodyType={bodyType} />
+      <AircraftNose bodyType={bodyType} theme={theme} />
 
       {/* 2. Fuselage Tube containing Cabin Sections */}
-      <div className={`relative ${getFuselageWidthClass()} bg-slate-900 border-x-4 border-slate-700/80 flex flex-col items-center py-4 shadow-2xl transition-all duration-500`}>
+      <div className={`relative ${getFuselageWidthClass()} border-x-4 flex flex-col items-center py-4 transition-all duration-500 ${
+        isDark 
+          ? 'bg-slate-900 border-slate-700/80' 
+          : 'bg-white border-slate-300 shadow-md'
+      }`}>
         
         {/* Dynamic Wings Placement */}
         {/* Left Wing */}
@@ -71,7 +76,7 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
           }}
           className="absolute left-0 -translate-x-full pointer-events-none select-none z-0"
         >
-          <AircraftWing side="left" bodyType={bodyType} />
+          <AircraftWing side="left" bodyType={bodyType} theme={theme} />
         </div>
 
         {/* Right Wing */}
@@ -82,7 +87,7 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
           }}
           className="absolute right-0 translate-x-full pointer-events-none select-none z-0"
         >
-          <AircraftWing side="right" bodyType={bodyType} />
+          <AircraftWing side="right" bodyType={bodyType} theme={theme} />
         </div>
 
         {/* Fuselage Inner Cabin track */}
@@ -90,18 +95,21 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
           {/* Front Facilities */}
           {frontFacilities.map((r, i) => (
             <div key={`front-fac-${i}`} className="w-full">
-              {/* Renders facility row */}
-              {r.seats.map((_, idx) => null)} {/* Spacers */}
-              {/* Render facility content directly */}
               <div className="w-full px-6 flex items-center justify-between gap-4 py-2">
-                <div className="flex-1 p-2.5 bg-slate-800/80 border border-slate-700 rounded-xl flex items-center justify-center gap-2 text-slate-300">
-                  <span className="font-bold text-amber-500 text-[10px] border border-amber-500/30 px-1 py-0.5 rounded leading-none">FD</span>
-                  <span className="text-[10px] font-extrabold tracking-wider">FLIGHT DECK</span>
+                <div className={`flex-1 p-2 border rounded-none flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider ${
+                  isDark ? 'bg-slate-800/80 border-slate-700 text-slate-350' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}>
+                  <span className="font-extrabold text-amber-500 text-[9px] border border-amber-500/30 px-1 py-0.5 rounded-none leading-none">FD</span>
+                  <span className="text-[10px] font-bold">FLIGHT DECK</span>
                 </div>
-                <div className="w-12 text-center text-[9px] text-slate-500 font-extrabold tracking-wider">AISLE</div>
-                <div className="flex-1 p-2.5 bg-slate-800/80 border border-slate-700 rounded-xl flex items-center justify-center gap-2 text-slate-300">
-                  <span className="font-bold text-sky-400 text-[10px] border border-sky-400/30 px-1 py-0.5 rounded leading-none">WC</span>
-                  <span className="text-[10px] font-extrabold tracking-wider">LAVATORY</span>
+                <div className={`w-12 text-center text-[9px] font-black uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  AISLE
+                </div>
+                <div className={`flex-1 p-2 border rounded-none flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider ${
+                  isDark ? 'bg-slate-800/80 border-slate-700 text-slate-350' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}>
+                  <span className="font-extrabold text-sky-500 text-[9px] border border-sky-500/30 px-1 py-0.5 rounded-none leading-none">WC</span>
+                  <span className="text-[10px] font-bold">LAVATORY</span>
                 </div>
               </div>
             </div>
@@ -114,14 +122,17 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
             selectedSeatsMap={selectedSeatsMap}
             activePassengerId={activePassengerId}
             onSelect={onSelect}
+            theme={theme}
           />
 
           {/* Render dividers if transition happens directly between Business and Premium */}
           {dividers.filter(d => Math.abs(d.rowNo) <= (businessRows[businessRows.length - 1]?.rowNo || 0)).map((r, i) => (
-            <div key={`div-bp-${i}`} className="w-full px-6 py-2 flex items-center justify-between gap-4 text-slate-500 text-[10px] font-bold uppercase border-y border-dashed border-slate-800">
-              <div className="flex-1 text-center py-1 bg-slate-850 rounded">Lavatory</div>
-              <div className="w-12 text-center text-[9px] text-slate-600">Divider</div>
-              <div className="flex-1 text-center py-1 bg-slate-850 rounded">Galley</div>
+            <div key={`div-bp-${i}`} className={`w-full px-6 py-2 flex items-center justify-between gap-4 text-[9px] font-bold uppercase border-y border-dashed ${
+              isDark ? 'text-slate-500 border-slate-850' : 'text-slate-400 border-slate-150'
+            }`}>
+              <div className={`flex-1 text-center py-1 rounded-none ${isDark ? 'bg-slate-850' : 'bg-slate-100'}`}>Lavatory</div>
+              <div className="w-12 text-center">Divider</div>
+              <div className={`flex-1 text-center py-1 rounded-none ${isDark ? 'bg-slate-850' : 'bg-slate-100'}`}>Galley</div>
             </div>
           ))}
 
@@ -132,6 +143,7 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
             selectedSeatsMap={selectedSeatsMap}
             activePassengerId={activePassengerId}
             onSelect={onSelect}
+            theme={theme}
           />
 
           {/* Render dividers between Premium and Economy */}
@@ -141,10 +153,12 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
             const premMax = premiumRows[premiumRows.length - 1]?.rowNo || 0;
             return rowVal > busMax && rowVal <= premMax;
           }).map((r, i) => (
-            <div key={`div-pe-${i}`} className="w-full px-6 py-2 flex items-center justify-between gap-4 text-slate-500 text-[10px] font-bold uppercase border-y border-dashed border-slate-800">
-              <div className="flex-1 text-center py-1 bg-slate-850 rounded">Lavatory</div>
-              <div className="w-12 text-center text-[9px] text-slate-600">Divider</div>
-              <div className="flex-1 text-center py-1 bg-slate-850 rounded">Galley</div>
+            <div key={`div-pe-${i}`} className={`w-full px-6 py-2 flex items-center justify-between gap-4 text-[9px] font-bold uppercase border-y border-dashed ${
+              isDark ? 'text-slate-500 border-slate-850' : 'text-slate-400 border-slate-150'
+            }`}>
+              <div className={`flex-1 text-center py-1 rounded-none ${isDark ? 'bg-slate-850' : 'bg-slate-100'}`}>Lavatory</div>
+              <div className="w-12 text-center">Divider</div>
+              <div className={`flex-1 text-center py-1 rounded-none ${isDark ? 'bg-slate-850' : 'bg-slate-100'}`}>Galley</div>
             </div>
           ))}
 
@@ -155,20 +169,29 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
             selectedSeatsMap={selectedSeatsMap}
             activePassengerId={activePassengerId}
             onSelect={onSelect}
+            theme={theme}
           />
 
           {/* Rear Facilities */}
           {rearFacilities.map((r, i) => (
             <div key={`rear-fac-${i}`} className="w-full">
-              <div className="w-full px-6 flex items-center justify-between gap-4 py-3 border-t border-slate-850 mt-2">
-                <div className="flex-1 p-2.5 bg-slate-850 border border-slate-750 rounded-xl flex items-center justify-center gap-1.5 text-slate-400">
+              <div className={`w-full px-6 flex items-center justify-between gap-4 py-3 border-t mt-2 ${
+                isDark ? 'border-slate-850' : 'border-slate-150'
+              }`}>
+                <div className={`flex-1 p-2 border rounded-none flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
+                  isDark ? 'bg-slate-850 border-slate-750 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}>
                   <span className="font-extrabold text-[10px]">WC</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">LAVATORY</span>
+                  <span>LAVATORY</span>
                 </div>
-                <div className="w-12 text-center text-[9px] text-slate-500 font-extrabold tracking-wider">AISLE</div>
-                <div className="flex-1 p-2.5 bg-slate-850 border border-slate-750 rounded-xl flex items-center justify-center gap-1.5 text-slate-400">
+                <div className={`w-12 text-center text-[9px] font-black uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                  AISLE
+                </div>
+                <div className={`flex-1 p-2 border rounded-none flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider ${
+                  isDark ? 'bg-slate-850 border-slate-750 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-700'
+                }`}>
                   <span className="font-extrabold text-[10px]">WC</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">LAVATORY</span>
+                  <span>LAVATORY</span>
                 </div>
               </div>
             </div>
@@ -177,7 +200,7 @@ export const AircraftShell: React.FC<AircraftShellProps> = ({
       </div>
 
       {/* 3. Aircraft Tail */}
-      <AircraftTail bodyType={bodyType} />
+      <AircraftTail bodyType={bodyType} theme={theme} />
     </div>
   );
 };

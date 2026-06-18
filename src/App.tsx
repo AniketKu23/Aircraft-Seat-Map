@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plane, ChevronRight, Settings, Info, RefreshCw, Layers } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plane, ChevronRight, Settings, Info, RefreshCw, Layers, Sun, Moon } from 'lucide-react';
 
 // Data files
 import seatData from '../seatData.json';
@@ -34,10 +35,14 @@ const DATA_SOURCES = [
 ];
 
 const App: React.FC = () => {
-  // 1. Data Loading State
-  const [selectedSourceValue, setSelectedSourceValue] = useState<string>('req2'); // Default to rich req2
+  // Theme State
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const isDark = theme === 'dark';
+
+  // Data Loading State
+  const [selectedSourceValue, setSelectedSourceValue] = useState<string>('req2');
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number>(0);
-  const [passengerCountInput, setPassengerCountInput] = useState<number>(2); // Default to 2 passengers for multi-seat tests
+  const [passengerCountInput, setPassengerCountInput] = useState<number>(2);
 
   // Get active source data
   const activeSource = useMemo(() => {
@@ -60,7 +65,7 @@ const App: React.FC = () => {
     setActiveSegmentIndex(0);
   }, [selectedSourceValue]);
 
-  // 2. Normalize Seat Data for Active Segment
+  // Normalize Seat Data for Active Segment
   const normalizedSeats = useMemo((): SeatItem[] => {
     if (!activeSegment) return [];
     return parseSeatData(activeSource.data, activeSegment.ref);
@@ -71,7 +76,7 @@ const App: React.FC = () => {
     return getAircraftLayout(activeSegment?.aircraftCode);
   }, [activeSegment]);
 
-  // 3. Selection Hooks
+  // Selection Hooks
   const {
     passengers,
     activePassengerId,
@@ -105,46 +110,90 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500/30">
-      {/* Premium Header */}
-      <header className="sticky top-0 z-50 bg-slate-900/80 border-b border-slate-800 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <div className={`min-h-screen relative overflow-hidden transition-colors duration-300 font-sans selection:bg-blue-500/30 ${
+      isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+    }`}>
+      
+      {/* BACKGROUND FLIGHT VECTOR ANIMATION */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
+        {/* Radial Pulse Glow */}
+        <div className={`absolute top-[20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full filter blur-[120px] animate-radial-pulse ${
+          isDark ? 'bg-blue-500/[0.03]' : 'bg-blue-500/[0.02]'
+        }`} />
+
+        {/* Altitude Drifting Vector lines */}
+        <div className={`absolute left-[5%] top-0 h-[10px] w-[1px] animate-drift-slow ${isDark ? 'bg-slate-800/15' : 'bg-slate-300/40'}`} style={{ animationDelay: '0s' }} />
+        <div className={`absolute left-[15%] top-0 h-[30px] w-[1px] animate-drift-fast ${isDark ? 'bg-slate-800/15' : 'bg-slate-300/40'}`} style={{ animationDelay: '5s' }} />
+        <div className={`absolute left-[40%] top-0 h-[15px] w-[1px] animate-drift-slow ${isDark ? 'bg-slate-800/15' : 'bg-slate-300/40'}`} style={{ animationDelay: '10s' }} />
+        <div className={`absolute right-[20%] top-0 h-[40px] w-[1px] animate-drift-fast ${isDark ? 'bg-slate-800/15' : 'bg-slate-300/40'}`} style={{ animationDelay: '2s' }} />
+        <div className={`absolute right-[8%] top-0 h-[20px] w-[1px] animate-drift-slow ${isDark ? 'bg-slate-800/15' : 'bg-slate-300/40'}`} style={{ animationDelay: '8s' }} />
+        <div className={`absolute right-[35%] top-0 h-[25px] w-[1px] animate-drift-fast ${isDark ? 'bg-slate-800/15' : 'bg-slate-300/40'}`} style={{ animationDelay: '12s' }} />
+      </div>
+
+      {/* Header */}
+      <header className={`sticky top-0 z-50 border-b transition-all duration-300 backdrop-blur-md ${
+        isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200 shadow-sm'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2 rounded-xl shadow-lg shadow-blue-500/20">
-              <Plane className="w-5 h-5 text-white" />
+            <div className="bg-blue-600 p-2 rounded-none shadow">
+              <Plane className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="text-sm font-black text-white tracking-wider uppercase">SKYFLOW</span>
-              <span className="text-[10px] text-slate-400 block font-bold tracking-widest uppercase leading-none">Seat Map Engine</span>
+              <span className={`text-xs font-black tracking-wider uppercase ${isDark ? 'text-white' : 'text-slate-950'}`}>SKYFLOW</span>
+              <span className={`text-[9px] block font-bold tracking-widest uppercase leading-none ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Seat Selector</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-slate-400 bg-slate-950 px-2.5 py-1 rounded-full border border-slate-800 font-mono">
-              v1.2.0 (React 19)
+          <div className="flex items-center gap-4">
+            {/* Theme Toggle Button */}
+            <motion.button
+              type="button"
+              onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              className={`p-2 border rounded-none cursor-pointer transition-colors ${
+                isDark 
+                  ? 'bg-slate-800 border-slate-700 text-yellow-400 hover:text-yellow-300' 
+                  : 'bg-slate-100 border-slate-300 text-slate-600 hover:text-slate-800'
+              }`}
+              title="Toggle Theme"
+            >
+              {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            </motion.button>
+            <span className={`text-[10px] font-mono border px-2 py-0.5 rounded-none ${
+              isDark ? 'text-slate-400 bg-slate-950 border-slate-800' : 'text-slate-600 bg-slate-100 border-slate-300'
+            }`}>
+              v1.2.0-TS
             </span>
           </div>
         </div>
       </header>
 
-      {/* Main Dashboard Layout */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Dashboard */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         
-        {/* Settings and Config Control Bar */}
-        <section className="bg-slate-900 border border-slate-800 p-5 rounded-3xl shadow-xl mb-8">
-          <div className="flex items-center gap-2 mb-4 text-slate-300 text-xs font-bold uppercase tracking-wider">
-            <Settings className="w-4 h-4 text-slate-400" />
-            <span>Control Center Panel (Demo & Testing)</span>
+        {/* Control Panel (Minimalist sharp styling) */}
+        <section className={`border p-4 rounded-none shadow-sm mb-6 text-left transition-colors duration-300 ${
+          isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+        }`}>
+          <div className={`flex items-center gap-2 mb-3.5 text-[10px] font-black uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+            <Settings className="w-4 h-4" />
+            <span>Control Center Panel</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* 1. Data Source Select */}
-            <div className="flex flex-col text-left">
-              <label className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1.5">JSON Data Source</label>
+            <div className="flex flex-col">
+              <label className={`text-[9px] font-black uppercase tracking-wider mb-1 ${isDark ? 'text-slate-450' : 'text-slate-500'}`}>Data Source File</label>
               <select
                 value={selectedSourceValue}
                 onChange={(e) => setSelectedSourceValue(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 hover:border-slate-750 text-xs text-slate-200 rounded-xl px-3 py-2.5 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full border text-xs rounded-none px-2.5 py-2 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  isDark 
+                    ? 'bg-slate-950 border-slate-800 text-slate-200' 
+                    : 'bg-slate-50 border-slate-300 text-slate-800'
+                }`}
               >
                 {DATA_SOURCES.map((source) => (
                   <option key={source.value} value={source.value}>
@@ -154,26 +203,30 @@ const App: React.FC = () => {
               </select>
             </div>
 
-            {/* 2. Flight Segment Tabs Selector */}
-            <div className="flex flex-col text-left">
-              <label className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1.5">Select Flight Segment</label>
+            {/* 2. Flight Segment Tabs */}
+            <div className="flex flex-col">
+              <label className={`text-[9px] font-black uppercase tracking-wider mb-1 ${isDark ? 'text-slate-450' : 'text-slate-500'}`}>Select Segment</label>
               {segments.length > 0 ? (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1">
                   {segments.map((seg, idx) => (
-                    <button
+                    <motion.button
                       key={seg.ref}
                       onClick={() => {
                         setActiveSegmentIndex(idx);
                         clearSelection();
                       }}
-                      className={`text-[10px] font-extrabold uppercase px-3 py-2 rounded-xl border transition-all duration-300 ${
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`text-[9px] font-black uppercase px-2.5 py-2.5 rounded-none border transition-all duration-300 cursor-pointer ${
                         idx === activeSegmentIndex
-                          ? 'bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-500/15'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                          ? 'bg-blue-600 border-blue-500 text-white shadow-sm'
+                          : isDark
+                            ? 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                            : 'bg-slate-50 border-slate-300 text-slate-500 hover:text-slate-750 hover:border-slate-450'
                       }`}
                     >
                       {seg.origin} ➡️ {seg.destination} ({seg.carrier}{seg.flightNumber})
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               ) : (
@@ -181,9 +234,9 @@ const App: React.FC = () => {
               )}
             </div>
 
-            {/* 3. Passengers Count Config */}
-            <div className="flex flex-col text-left">
-              <label className="text-[10px] text-slate-400 font-black uppercase tracking-wider mb-1.5">Passenger Count</label>
+            {/* 3. Passengers Count Selector */}
+            <div className="flex flex-col">
+              <label className={`text-[9px] font-black uppercase tracking-wider mb-1 ${isDark ? 'text-slate-450' : 'text-slate-500'}`}>Passenger Count</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
@@ -196,83 +249,97 @@ const App: React.FC = () => {
                       setPassengerCountInput(val);
                     }
                   }}
-                  className="w-20 bg-slate-950 border border-slate-800 text-center text-xs text-slate-200 rounded-xl px-2 py-2.5 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-14 border text-center text-xs rounded-none px-1 py-2 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                    isDark 
+                      ? 'bg-slate-950 border-slate-800 text-slate-200' 
+                      : 'bg-slate-50 border-slate-300 text-slate-800'
+                  }`}
                 />
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider leading-snug">
-                  Multi-seat Sequential selection test (Max 6)
+                <span className={`text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-450' : 'text-slate-400'}`}>
+                  (1 - 6 seats sequential)
                 </span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Aircraft Information Header Banner */}
+        {/* Flight Information Header Banner */}
         {activeSegment && (
-          <section className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6 text-left">
-            <div className="flex items-center gap-4">
-              <div className="bg-slate-950 p-3.5 border border-slate-800 rounded-2xl flex items-center justify-center text-yellow-400">
-                <Plane className="w-6 h-6 rotate-90" />
+          <section className={`border p-5 rounded-none shadow-sm mb-6 flex flex-col md:flex-row items-center justify-between gap-4 text-left transition-colors duration-300 ${
+            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2.5 border rounded-none flex items-center justify-center ${
+                isDark ? 'bg-slate-950 border-slate-800 text-blue-400' : 'bg-slate-50 border-slate-250 text-blue-600'
+              }`}>
+                <Plane className="w-5 h-5 rotate-90" />
               </div>
               <div>
-                <h1 className="text-lg font-black text-white tracking-tight leading-snug">
+                <h1 className="text-md font-black tracking-tight leading-none mb-1.5">
                   {activeLayout.name} ({activeSegment.aircraftCode})
                 </h1>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-slate-400">
-                  <span className="font-bold text-slate-300 uppercase tracking-wide">
+                <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] text-slate-400">
+                  <span className="font-bold text-blue-500 uppercase">
                     {activeSegment.carrier} Flight {activeSegment.flightNumber}
                   </span>
-                  <span className="text-slate-600">•</span>
-                  <span className="flex items-center gap-1">
-                    <span className="font-extrabold text-white bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{activeSegment.origin}</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-                    <span className="font-extrabold text-white bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{activeSegment.destination}</span>
+                  <span className="text-slate-500">•</span>
+                  <span className="flex items-center gap-1 font-bold">
+                    <span className={`px-1.5 py-0.2 rounded-none border ${isDark ? 'bg-slate-950 border-slate-805 text-white' : 'bg-slate-100 border-slate-250 text-slate-750'}`}>{activeSegment.origin}</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
+                    <span className={`px-1.5 py-0.2 rounded-none border ${isDark ? 'bg-slate-950 border-slate-805 text-white' : 'bg-slate-100 border-slate-250 text-slate-750'}`}>{activeSegment.destination}</span>
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6">
+            <div className="flex flex-wrap items-center gap-5">
               <div className="text-center md:text-right">
-                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Cabin Layout</span>
-                <span className="text-sm font-extrabold text-slate-200 uppercase tracking-wider">{activeLayout.layoutType}</span>
+                <span className={`text-[8px] font-black uppercase tracking-wider block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Layout</span>
+                <span className="text-xs font-black uppercase">{activeLayout.layoutType}</span>
               </div>
-              <div className="h-8 w-[1px] bg-slate-800" />
+              <div className={`h-6 w-[1px] ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
               <div className="text-center md:text-right">
-                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Total Seats in Segment</span>
-                <span className="text-sm font-extrabold text-slate-200">{normalizedSeats.length} Seats</span>
+                <span className={`text-[8px] font-black uppercase tracking-wider block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Capacity</span>
+                <span className="text-xs font-black">{normalizedSeats.length} Seats</span>
               </div>
-              <div className="h-8 w-[1px] bg-slate-800" />
+              <div className={`h-6 w-[1px] ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
               <div className="text-center md:text-right">
-                <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Selected</span>
-                <span className="text-sm font-extrabold text-blue-400">{selectedSeatCodes.length} / {passengerCountInput}</span>
+                <span className={`text-[8px] font-black uppercase tracking-wider block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Selected</span>
+                <span className="text-xs font-black text-blue-500">{selectedSeatCodes.length} / {passengerCountInput}</span>
               </div>
             </div>
           </section>
         )}
 
-        {/* Dashboard Split Grid */}
-        <section className="flex flex-col lg:flex-row items-start gap-8">
+        {/* Dashboard Split Layout */}
+        <section className="flex flex-col lg:flex-row items-start gap-6 relative">
           
-          {/* LEFT PANEL: Scrollable Aircraft Fuselage Structure */}
-          <div className="flex-1 w-full bg-slate-900 border border-slate-800 rounded-3xl shadow-xl overflow-hidden flex flex-col items-center">
+          {/* LEFT PANEL: Aircraft Seat Map */}
+          <div className={`flex-1 w-full border rounded-none shadow-sm overflow-hidden flex flex-col items-center transition-colors duration-300 ${
+            isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+          }`}>
             
-            {/* Visual Header */}
-            <div className="w-full px-6 py-4 bg-slate-850 border-b border-slate-800 flex justify-between items-center select-none">
-              <span className="text-xs font-black tracking-widest text-slate-300 uppercase">Interactive Seat Map Viewport</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={clearSelection}
-                  className="text-[10px] font-black uppercase tracking-wider text-slate-400 hover:text-slate-200 transition-colors flex items-center gap-1.5"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  <span>Clear Map</span>
-                </button>
-              </div>
+            {/* Viewport Header */}
+            <div className={`w-full px-5 py-3 border-b flex justify-between items-center select-none ${
+              isDark ? 'bg-slate-850/80 border-slate-800' : 'bg-slate-50 border-slate-200'
+            }`}>
+              <span className={`text-[9px] font-black tracking-widest uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Interactive Seat Map</span>
+              <motion.button
+                type="button"
+                onClick={clearSelection}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="text-[9px] font-black uppercase tracking-wider text-slate-450 hover:text-red-500 transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <RefreshCw className="w-2.5 h-2.5" />
+                <span>Reset</span>
+              </motion.button>
             </div>
 
-            {/* Fuselage scroll track container */}
-            <div className="w-full max-h-[850px] overflow-y-auto px-4 py-8 bg-gradient-to-b from-slate-950 to-slate-900 flex justify-center scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-slate-950">
-              
+            {/* Fuselage Map Tube */}
+            <div className={`w-full max-h-[800px] overflow-y-auto px-4 py-8 flex justify-center transition-colors duration-300 ${
+              isDark ? 'bg-gradient-to-b from-slate-950 to-slate-900' : 'bg-slate-50'
+            }`}>
               {normalizedSeats.length > 0 ? (
                 <AircraftShell
                   aircraftCode={activeSegment?.aircraftCode}
@@ -280,21 +347,22 @@ const App: React.FC = () => {
                   selectedSeatsMap={selectedSeatsMap}
                   activePassengerId={activePassengerId}
                   onSelect={selectSeat}
+                  theme={theme}
                 />
               ) : (
-                <div className="py-24 text-center text-slate-500 italic text-sm">
-                  Loading seat map data segment...
+                <div className="py-24 text-center text-slate-500 italic text-xs">
+                  Loading seat map data...
                 </div>
               )}
             </div>
           </div>
 
           {/* RIGHT PANEL: Legend & Sidebar summaries */}
-          <div className="w-full lg:w-[380px] shrink-0 space-y-6 lg:sticky lg:top-20">
-            {/* Legend card */}
-            <SeatLegend />
+          <div className="w-full lg:w-[360px] shrink-0 space-y-5 lg:sticky lg:top-20">
+            {/* Legend */}
+            <SeatLegend theme={theme} />
 
-            {/* Selected Seats summary card */}
+            {/* Selected Seats summary */}
             <SeatSummary
               passengers={passengers}
               activePassengerId={activePassengerId}
@@ -302,41 +370,63 @@ const App: React.FC = () => {
               setPassengerType={setPassengerType}
               onDeselect={deselectSeat}
               seats={normalizedSeats}
+              theme={theme}
             />
 
-            {/* Fare Calculation & Checkout card */}
+            {/* Fare Calculation */}
             <FareSummary
               passengers={passengers}
               seats={normalizedSeats}
               onConfirm={handleBookingConfirm}
               currency={normalizedSeats[0]?.currency || 'AED'}
+              theme={theme}
             />
 
             {/* Floating Mini-Map / Quick Section Navigator */}
-            <div className="p-4 bg-slate-900 border border-slate-800 rounded-2xl shadow-md text-left select-none">
-              <div className="flex items-center gap-1.5 mb-3 text-slate-350 text-[10px] font-extrabold uppercase tracking-wider">
-                <Layers className="w-3.5 h-3.5 text-slate-400" />
-                <span>Quick Cabin Section Navigator</span>
+            <div className={`p-4 border rounded-none shadow-sm text-left select-none transition-colors duration-300 ${
+              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+            }`}>
+              <div className={`flex items-center gap-1.5 mb-3 text-[9px] font-extrabold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                <Layers className="w-3.5 h-3.5" />
+                <span>Cabin Navigation</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <button
+                <motion.button
                   onClick={() => scrollToSection('BUSINESS CLASS')}
-                  className="py-2 px-1 text-[10px] font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center hover:bg-amber-500/20 transition-all cursor-pointer"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`py-1.5 text-[9px] font-black uppercase border rounded-none text-center cursor-pointer transition-all duration-300 ${
+                    isDark
+                      ? 'text-amber-500 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20'
+                      : 'text-amber-700 bg-amber-50 border-amber-350 hover:bg-amber-100'
+                  }`}
                 >
                   Business
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={() => scrollToSection('PREMIUM ECONOMY')}
-                  className="py-2 px-1 text-[10px] font-black uppercase text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-center hover:bg-indigo-500/20 transition-all cursor-pointer"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`py-1.5 text-[9px] font-black uppercase border rounded-none text-center cursor-pointer transition-all duration-300 ${
+                    isDark
+                      ? 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20 hover:bg-indigo-500/20'
+                      : 'text-indigo-800 bg-indigo-50 border-indigo-350 hover:bg-indigo-100'
+                  }`}
                 >
                   Premium
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={() => scrollToSection('ECONOMY CLASS')}
-                  className="py-2 px-1 text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center hover:bg-emerald-500/20 transition-all cursor-pointer"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className={`py-1.5 text-[9px] font-black uppercase border rounded-none text-center cursor-pointer transition-all duration-300 ${
+                    isDark
+                      ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20'
+                      : 'text-emerald-805 bg-emerald-50 border-emerald-350 hover:bg-emerald-100'
+                  }`}
                 >
                   Economy
-                </button>
+                </motion.button>
               </div>
             </div>
           </div>
