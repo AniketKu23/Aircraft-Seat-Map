@@ -26,7 +26,7 @@ export const BusinessCabin: React.FC<BusinessCabinProps> = ({
   const isDark = theme === 'dark';
 
   return (
-    <div className={`relative my-4 p-4 border rounded-none transition-all duration-300 ${
+    <div id="BUSINESS CLASS" className={`relative my-4 p-4 border rounded-none transition-all duration-300 ${
       isDark 
         ? 'bg-amber-500/[0.01] border-amber-500/20' 
         : 'bg-amber-500/[0.02] border-amber-500/25'

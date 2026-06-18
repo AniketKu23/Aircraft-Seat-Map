@@ -26,7 +26,7 @@ export const PremiumEconomyCabin: React.FC<PremiumEconomyCabinProps> = ({
   const isDark = theme === 'dark';
 
   return (
-    <div className={`relative my-4 p-4 border rounded-none transition-all duration-300 ${
+    <div id="PREMIUM ECONOMY" className={`relative my-4 p-4 border rounded-none transition-all duration-300 ${
       isDark 
         ? 'bg-indigo-500/[0.01] border-indigo-500/20' 
         : 'bg-indigo-500/[0.02] border-indigo-500/25'
