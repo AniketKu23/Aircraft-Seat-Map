@@ -1,5 +1,7 @@
 # SkyFlow: Airline-Grade Aircraft Seat Map Engine
 
+**Live Demo:** [endearing-horse-7e5123.netlify.app](https://endearing-horse-7e5123.netlify.app/)
+
 SkyFlow is a high-fidelity, TypeScript-powered aircraft seat map rendering and passenger seat selection engine. It transitions a simple grid layout into an interactive airline booking experience modeled after major global carriers (Emirates, Qatar Airways, Saudi Arabian Airlines, Gulf Air).
 
 ---
