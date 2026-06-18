@@ -1,0 +1,71 @@
+import React from 'react';
+
+interface AircraftTailProps {
+  bodyType: 'NARROW' | 'WIDE' | 'REGIONAL';
+}
+
+export const AircraftTail: React.FC<AircraftTailProps> = ({ bodyType }) => {
+  // Sizing helper based on aircraft body type
+  const getWidthClass = () => {
+    switch (bodyType) {
+      case 'WIDE':
+        return 'w-[420px]';
+      case 'REGIONAL':
+        return 'w-[280px]';
+      default: // NARROW
+        return 'w-[340px]';
+    }
+  };
+
+  return (
+    <div className={`relative flex flex-col items-center select-none ${getWidthClass()} transition-all duration-500`}>
+      {/* SVG Aircraft Tail */}
+      <svg
+        viewBox="0 0 340 180"
+        className="w-full h-auto"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Stabilizers behind fuselage */}
+        {/* Left Horizontal Stabilizer */}
+        <path
+          d="M 20 20 L -60 120 L 50 120 L 70 60 Z"
+          className="fill-slate-800 stroke-slate-700"
+          strokeWidth="3"
+        />
+
+        {/* Right Horizontal Stabilizer */}
+        <path
+          d="M 320 20 L 400 120 L 290 120 L 270 60 Z"
+          className="fill-slate-800 stroke-slate-700"
+          strokeWidth="3"
+        />
+
+        {/* Fuselage Rear Taper Outline */}
+        <path
+          d="M 20 0 C 20 0 25 80 150 150 C 158 155 182 155 190 150 C 315 80 320 0 320 0"
+          className="fill-slate-900 stroke-slate-700"
+          strokeWidth="4"
+        />
+
+        {/* APU Exhaust cone at very tail tip */}
+        <rect
+          x="162"
+          y="150"
+          width="16"
+          height="16"
+          rx="2"
+          className="fill-slate-950 stroke-slate-850"
+          strokeWidth="2"
+        />
+        
+        {/* Vertical Stabilizer Fin Outline (Shadow overlay in the center) */}
+        <path
+          d="M 167 40 L 170 145 L 173 145 L 173 40 Z"
+          className="fill-slate-750 stroke-slate-650"
+          strokeWidth="1.5"
+        />
+      </svg>
+    </div>
+  );
+};
