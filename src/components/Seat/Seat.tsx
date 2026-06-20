@@ -29,19 +29,11 @@ export const Seat: React.FC<SeatProps> = ({
 
   // Determine colors based on category, status, and theme
   const getSeatColors = () => {
-    if (isBlocked) {
+    if (isBlocked || isOccupied) {
       return {
-        base: isDark ? 'fill-slate-800 stroke-red-650' : 'fill-red-50 stroke-red-400',
-        armrest: isDark ? 'fill-slate-700 stroke-red-650' : 'fill-red-50 stroke-red-300',
-        backrest: isDark ? 'fill-slate-700 stroke-red-650' : 'fill-red-50 stroke-red-300',
-        text: 'text-red-500 font-bold',
-      };
-    }
-    if (isOccupied) {
-      return {
-        base: isDark ? 'fill-slate-800 stroke-slate-700' : 'fill-slate-100 stroke-slate-300',
-        armrest: isDark ? 'fill-slate-750 stroke-slate-700' : 'fill-slate-50 stroke-slate-250',
-        backrest: isDark ? 'fill-slate-750 stroke-slate-700' : 'fill-slate-50 stroke-slate-250',
+        base: isDark ? 'fill-slate-800 stroke-slate-700' : 'fill-slate-100 stroke-slate-350',
+        armrest: isDark ? 'fill-slate-750 stroke-slate-700' : 'fill-slate-50 stroke-slate-300',
+        backrest: isDark ? 'fill-slate-750 stroke-slate-700' : 'fill-slate-50 stroke-slate-300',
         text: isDark ? 'text-slate-600' : 'text-slate-400',
       };
     }
@@ -54,43 +46,23 @@ export const Seat: React.FC<SeatProps> = ({
       };
     }
 
-    // Colors by Category
-    switch (seat.category) {
-      case 'BUSINESS':
-        return {
-          base: isDark ? 'fill-amber-500/10 stroke-amber-500' : 'fill-amber-50 stroke-amber-450',
-          armrest: isDark ? 'fill-amber-500/15 stroke-amber-500' : 'fill-amber-50/50 stroke-amber-400',
-          backrest: isDark ? 'fill-amber-500/15 stroke-amber-500' : 'fill-amber-50/50 stroke-amber-400',
-          text: isDark ? 'text-amber-400 font-bold' : 'text-amber-700 font-extrabold',
-        };
-      case 'EXIT_ROW':
-        return {
-          base: isDark ? 'fill-orange-500/10 stroke-orange-500' : 'fill-orange-50 stroke-orange-450',
-          armrest: isDark ? 'fill-orange-500/15 stroke-orange-500' : 'fill-orange-50/50 stroke-orange-400',
-          backrest: isDark ? 'fill-orange-500/15 stroke-orange-500' : 'fill-orange-50/50 stroke-orange-400',
-          text: isDark ? 'text-orange-400 font-bold' : 'text-orange-700 font-extrabold',
-        };
-      case 'EXTRA_LEGROOM':
-        return {
-          base: isDark ? 'fill-purple-500/10 stroke-purple-500' : 'fill-purple-50 stroke-purple-450',
-          armrest: isDark ? 'fill-purple-500/15 stroke-purple-500' : 'fill-purple-50/50 stroke-purple-400',
-          backrest: isDark ? 'fill-purple-500/15 stroke-purple-500' : 'fill-purple-50/50 stroke-purple-400',
-          text: isDark ? 'text-purple-400 font-bold' : 'text-purple-750 font-extrabold',
-        };
-      case 'PREFERRED':
-        return {
-          base: isDark ? 'fill-teal-500/10 stroke-teal-500' : 'fill-teal-50 stroke-teal-450',
-          armrest: isDark ? 'fill-teal-500/15 stroke-teal-500' : 'fill-teal-50/50 stroke-teal-400',
-          backrest: isDark ? 'fill-teal-500/15 stroke-teal-500' : 'fill-teal-50/50 stroke-teal-400',
-          text: isDark ? 'text-teal-400 font-bold' : 'text-teal-750 font-extrabold',
-        };
-      default: // STANDARD
-        return {
-          base: isDark ? 'fill-emerald-500/10 stroke-emerald-500' : 'fill-emerald-50 stroke-emerald-450',
-          armrest: isDark ? 'fill-emerald-500/15 stroke-emerald-500' : 'fill-emerald-50/50 stroke-emerald-400',
-          backrest: isDark ? 'fill-emerald-500/15 stroke-emerald-500' : 'fill-emerald-50/50 stroke-emerald-400',
-          text: isDark ? 'text-emerald-455 font-bold' : 'text-emerald-700 font-extrabold',
-        };
+    // Available seat - color depends on pricing
+    if (seat.price === 0) {
+      // Free Seat (Green)
+      return {
+        base: isDark ? 'fill-emerald-500/10 stroke-emerald-500' : 'fill-emerald-50 stroke-emerald-450',
+        armrest: isDark ? 'fill-emerald-500/15 stroke-emerald-500' : 'fill-emerald-50/50 stroke-emerald-400',
+        backrest: isDark ? 'fill-emerald-500/15 stroke-emerald-500' : 'fill-emerald-50/50 stroke-emerald-400',
+        text: isDark ? 'text-emerald-455 font-bold' : 'text-emerald-700 font-extrabold',
+      };
+    } else {
+      // Chargeable Seat (Orange/Gold)
+      return {
+        base: isDark ? 'fill-amber-500/10 stroke-amber-500' : 'fill-amber-50 stroke-amber-450',
+        armrest: isDark ? 'fill-amber-500/15 stroke-amber-500' : 'fill-amber-50/50 stroke-amber-400',
+        backrest: isDark ? 'fill-amber-500/15 stroke-amber-500' : 'fill-amber-50/50 stroke-amber-400',
+        text: isDark ? 'text-amber-400 font-bold' : 'text-amber-700 font-extrabold',
+      };
     }
   };
 

@@ -1,48 +1,21 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Passenger, SeatItem } from '../types/seat';
 
-export function useSeatSelection(initialPassengerCount = 1) {
-  const [passengers, setPassengers] = useState<Passenger[]>(() => {
-    return Array.from({ length: initialPassengerCount }, (_, i) => ({
-      id: `p-${i + 1}`,
-      name: `Passenger ${i + 1}`,
-      type: 'ADULT',
-      selectedSeat: null
-    }));
-  });
+export function useSeatSelection() {
+  const [passengers, setPassengers] = useState<Passenger[]>([]);
+  const [activePassengerId, setActivePassengerId] = useState<string>('');
 
-  const [activePassengerId, setActivePassengerId] = useState<string>(`p-1`);
-
-  // Reset or change passenger count
-  const setPassengerCount = useCallback((count: number) => {
-    setPassengers(prev => {
-      // Preserve existing if possible, otherwise create new
-      const nextPassengers: Passenger[] = [];
-      for (let i = 0; i < count; i++) {
-        const id = `p-${i + 1}`;
-        const existing = prev.find(p => p.id === id);
-        if (existing) {
-          nextPassengers.push(existing);
-        } else {
-          nextPassengers.push({
-            id,
-            name: `Passenger ${i + 1}`,
-            type: 'ADULT',
-            selectedSeat: null
-          });
-        }
+  // Auto-sync activePassengerId when passengers list changes
+  useEffect(() => {
+    if (passengers.length > 0) {
+      // If activePassengerId is not in the current list, default to the first one
+      if (!passengers.some(p => p.id === activePassengerId)) {
+        setActivePassengerId(passengers[0].id);
       }
-      return nextPassengers;
-    });
-    
-    // Reset active passenger to first one
-    setActivePassengerId(`p-1`);
-  }, []);
-
-  // Update a single passenger type
-  const setPassengerType = useCallback((id: string, type: 'ADULT' | 'CHILD' | 'INFANT') => {
-    setPassengers(prev => prev.map(p => p.id === id ? { ...p, type } : p));
-  }, []);
+    } else {
+      setActivePassengerId('');
+    }
+  }, [passengers, activePassengerId]);
 
   // Select a seat for the active passenger
   const selectSeat = useCallback((seat: SeatItem) => {
@@ -51,9 +24,6 @@ export function useSeatSelection(initialPassengerCount = 1) {
     }
 
     setPassengers(prev => {
-      // Find if anyone already has this seat
-      const isAlreadySelectedBySomeone = prev.find(p => p.selectedSeat === seat.code);
-      
       // Map passengers
       const updated = prev.map(p => {
         // If this passenger is the one who has it, they are clicking it again -> DESELECT
@@ -93,8 +63,10 @@ export function useSeatSelection(initialPassengerCount = 1) {
   // Clear all selections
   const clearSelection = useCallback(() => {
     setPassengers(prev => prev.map(p => ({ ...p, selectedSeat: null })));
-    setActivePassengerId(`p-1`);
-  }, []);
+    if (passengers.length > 0) {
+      setActivePassengerId(passengers[0].id);
+    }
+  }, [passengers]);
 
   // Map of seat code to passenger object for easy lookup
   const selectedSeatsMap = useMemo(() => {
@@ -113,10 +85,9 @@ export function useSeatSelection(initialPassengerCount = 1) {
 
   return {
     passengers,
+    setPassengers,
     activePassengerId,
     setActivePassengerId,
-    setPassengerCount,
-    setPassengerType,
     selectSeat,
     deselectSeat,
     clearSelection,

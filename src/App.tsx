@@ -3,10 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plane, ChevronRight, Settings, Info, RefreshCw, Layers, Sun, Moon } from 'lucide-react';
 
 // Data files
-import seatData from '../seatData.json';
-import seatdata2 from '../seatdata2.json';
-import req1 from '../req1.json.json';
-import req2 from '../req2.json.json';
+import req1 from '../req1.json';
+import req2 from '../req2.json';
 
 // Types
 import { FlightSegment } from './types/aircraft';
@@ -16,7 +14,7 @@ import { SeatItem } from './types/seat';
 import { getAircraftLayout } from './config/aircraftLayouts';
 
 // Utilities
-import { parseSeatData, extractFlightMetadata } from './utils/seatHelpers';
+import { parseSeatData, extractFlightMetadata, extractPassengers } from './utils/seatHelpers';
 
 // Hooks
 import { useSeatSelection } from './hooks/useSeatSelection';
@@ -28,10 +26,8 @@ import { SeatSummary } from './components/Sidebar/SeatSummary';
 import { FareSummary } from './components/Sidebar/FareSummary';
 
 const DATA_SOURCES = [
-  { label: 'Air India Express (A320)', value: 'seatData', data: seatData },
   { label: 'req1: Gulf Air (A320neo & A321neo)', value: 'req1', data: req1 },
-  { label: 'req2: Saudi Arabian (A330 & A321)', value: 'req2', data: req2 },
-  { label: 'seatdata2: Multiple Flights', value: 'seatdata2', data: seatdata2 }
+  { label: 'req2: Saudi Arabian (A330 & A321)', value: 'req2', data: req2 }
 ];
 
 const App: React.FC = () => {
@@ -40,18 +36,17 @@ const App: React.FC = () => {
   const isDark = theme === 'dark';
 
   // Data Loading State
-  const [selectedSourceValue, setSelectedSourceValue] = useState<string>('req2');
+  const [selectedSourceValue, setSelectedSourceValue] = useState<string>('req1');
   const [activeSegmentIndex, setActiveSegmentIndex] = useState<number>(0);
-  const [passengerCountInput, setPassengerCountInput] = useState<number>(2);
 
   // Get active source data
   const activeSource = useMemo(() => {
-    return DATA_SOURCES.find(s => s.value === selectedSourceValue) || DATA_SOURCES[1];
+    return DATA_SOURCES.find(s => s.value === selectedSourceValue) || DATA_SOURCES[0];
   }, [selectedSourceValue]);
 
   // Extract flight segments
   const segments = useMemo((): FlightSegment[] => {
-    return extractFlightMetadata(activeSource.data, activeSource.value);
+    return extractFlightMetadata(activeSource.data);
   }, [activeSource]);
 
   // Active segment
@@ -79,21 +74,23 @@ const App: React.FC = () => {
   // Selection Hooks
   const {
     passengers,
+    setPassengers,
     activePassengerId,
     setActivePassengerId,
-    setPassengerCount,
-    setPassengerType,
     selectSeat,
     deselectSeat,
     clearSelection,
     selectedSeatsMap,
     selectedSeatCodes
-  } = useSeatSelection(passengerCountInput);
+  } = useSeatSelection();
 
-  // Sync passenger count from input changes
+  // Dynamically sync passengers from API response when the data source changes
   useEffect(() => {
-    setPassengerCount(passengerCountInput);
-  }, [passengerCountInput, setPassengerCount]);
+    if (activeSource?.data) {
+      const extracted = extractPassengers(activeSource.data);
+      setPassengers(extracted);
+    }
+  }, [activeSource, setPassengers]);
 
   // Handle booking confirm
   const handleBookingConfirm = () => {
@@ -234,30 +231,24 @@ const App: React.FC = () => {
               )}
             </div>
 
-            {/* 3. Passengers Count Selector */}
+            {/* 3. Extracted Passengers */}
             <div className="flex flex-col">
-              <label className={`text-[9px] font-black uppercase tracking-wider mb-1 ${isDark ? 'text-slate-450' : 'text-slate-500'}`}>Passenger Count</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  max="6"
-                  value={passengerCountInput}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value);
-                    if (!isNaN(val) && val >= 1 && val <= 6) {
-                      setPassengerCountInput(val);
-                    }
-                  }}
-                  className={`w-14 border text-center text-xs rounded-none px-1 py-2 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                    isDark 
-                      ? 'bg-slate-950 border-slate-800 text-slate-200' 
-                      : 'bg-slate-50 border-slate-300 text-slate-800'
-                  }`}
-                />
-                <span className={`text-[9px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-450' : 'text-slate-400'}`}>
-                  (1 - 6 seats sequential)
-                </span>
+              <label className={`text-[9px] font-black uppercase tracking-wider mb-1 ${isDark ? 'text-slate-450' : 'text-slate-500'}`}>Extracted Passengers</label>
+              <div className="flex flex-wrap gap-1 py-1">
+                {passengers.map((p) => (
+                  <span
+                    key={p.id}
+                    className={`text-[9px] font-bold px-2 py-1.5 rounded-none border transition-colors ${
+                      p.id === activePassengerId
+                        ? 'bg-blue-600 border-blue-500 text-white font-extrabold shadow-sm'
+                        : isDark
+                          ? 'bg-slate-950 border-slate-800 text-slate-400'
+                          : 'bg-slate-50 border-slate-250 text-slate-650'
+                    }`}
+                  >
+                    {p.name} ({p.type})
+                  </span>
+                ))}
               </div>
             </div>
           </div>
@@ -305,7 +296,7 @@ const App: React.FC = () => {
               <div className={`h-6 w-[1px] ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
               <div className="text-center md:text-right">
                 <span className={`text-[8px] font-black uppercase tracking-wider block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Selected</span>
-                <span className="text-xs font-black text-blue-500">{selectedSeatCodes.length} / {passengerCountInput}</span>
+                <span className="text-xs font-black text-blue-500">{selectedSeatCodes.length} / {passengers.length}</span>
               </div>
             </div>
           </section>
@@ -367,7 +358,6 @@ const App: React.FC = () => {
               passengers={passengers}
               activePassengerId={activePassengerId}
               setActivePassengerId={setActivePassengerId}
-              setPassengerType={setPassengerType}
               onDeselect={deselectSeat}
               seats={normalizedSeats}
               theme={theme}

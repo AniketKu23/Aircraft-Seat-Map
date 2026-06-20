@@ -7,7 +7,6 @@ interface SeatSummaryProps {
   passengers: Passenger[];
   activePassengerId: string;
   setActivePassengerId: (id: string) => void;
-  setPassengerType: (id: string, type: 'ADULT' | 'CHILD' | 'INFANT') => void;
   onDeselect: (seatCode: string) => void;
   seats: SeatItem[];
   theme?: 'light' | 'dark';
@@ -17,7 +16,6 @@ export const SeatSummary: React.FC<SeatSummaryProps> = ({
   passengers,
   activePassengerId,
   setActivePassengerId,
-  setPassengerType,
   onDeselect,
   seats,
   theme = 'dark'
@@ -59,29 +57,19 @@ export const SeatSummary: React.FC<SeatSummaryProps> = ({
                   <div className={`w-2 h-2 rounded-full ${p.selectedSeat ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
                   <span className={`font-black text-xs uppercase ${isDark ? 'text-slate-100' : 'text-slate-750'}`}>{p.name}</span>
                   {isActive && (
-                    <span className="bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-none uppercase tracking-wider">
+                     <span className="bg-blue-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-none uppercase tracking-wider">
                       Selected
                     </span>
                   )}
                 </div>
 
-                <select
-                  value={p.type}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    setPassengerType(p.id, e.target.value as any);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className={`border text-[9px] rounded-none px-1.5 py-0.5 font-bold uppercase focus:outline-none ${
-                    isDark 
-                      ? 'bg-slate-800 border-slate-700 text-slate-200' 
-                      : 'bg-white border-slate-300 text-slate-700'
-                  }`}
-                >
-                  <option value="ADULT">Adult</option>
-                  <option value="CHILD">Child</option>
-                  <option value="INFANT">Infant</option>
-                </select>
+                <span className={`text-[9px] border rounded-none px-1.5 py-0.5 font-bold uppercase ${
+                  isDark 
+                    ? 'bg-slate-805 border-slate-750 text-slate-400' 
+                    : 'bg-slate-100 border-slate-250 text-slate-650'
+                }`}>
+                  {p.type}
+                </span>
               </div>
 
               {p.selectedSeat && seatDetail ? (
